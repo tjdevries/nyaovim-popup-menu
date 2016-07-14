@@ -6,6 +6,21 @@
         padding: 8px;
         border-radius: 8px;
       }
+
+      #proj {
+        width: 0px;
+        height: 0px;
+        position: absolute;
+        display: none;
+        border: 13px transparent solid;
+        border-top-width: 0;
+        border-bottom-color: #dddddd;
+      }
+      #btn {
+        display: block;
+        margin: auto;
+      }
+
     </style>
     <div id="popup">
       <content></content>
@@ -17,39 +32,49 @@
 <script>
 (function(){
   var popup, proj;
+
   Polymer({
     is: 'popup-menu',
+
     properties: {
       color: {
         type: String,
         value: ''
       },
+
       shown: {
         type: Boolean,
         value: false
       },
+
       x: {
         type: Number,
         value: 0
       },
+
       y: {
         type: Number,
         value: 0
       },
+
       editor: Object
     },
+
     ready: function() {
       popup = document.getElementById('popup');
       proj = document.getElementById('proj');
+
       if (this.color) {
         popup.style.backgroundColor = this.color;
         proj.style.backgroundColor = this.color;
       }
+
       if (this.shown) {
         this.show(this.x, this.y);
       }
-      this.client = this.editor.getClient();
-      this.client.on('notification', (method, args) => {
+
+      const c = this.editor.getClient();
+      c.on('notification', (method, args) => {
         switch(method) {
           case 'popup-menu:close': {
             if (this.shown) {
@@ -75,11 +100,12 @@
                               break;
         }
       });
-      this.client.subscribe('popup-menu:toggle');
-      this.client.subscribe('popup-menu:open');
-      this.client.subscribe('popup-menu:close');
+      c.subscribe('popup-menu:toggle');
+      c.subscribe('popup-menu:open');
+      c.subscribe('popup-menu:close');
     },
     setContent(elem) {
+      console.log("Setting content of elem");
       var len = popup.childNodes.length;
       if (len > 1) {
         popup.replaceChild(elem, popup.lastChild);
@@ -87,23 +113,28 @@
         popup.appendChild(elem);
       }
     },
-    show: function(path, line, col) {
+    show: function(str_list, line, col) {
       var loc = this.editor.screen.convertPositionToLocation(line, col - 1);
-      var img = document.createElement('img');
-      img.src = path;
-      this.setContent(img);
+
+      var p = document.createElement('my_text');
+      console.log("setting the text content to");
+      console.log(str_list);
+      p.textContent = str_list;
+      this.setContent(p);
+
       popup.style.left = (loc.x - 20 - 13) + 'px';
       popup.style.top = (loc.y + 13) + 'px';
       popup.style.display = 'block';
       proj.style.left = (loc.x - 13) + 'px';
       proj.style.top = loc.y + 'px';
       proj.style.display = 'inline'
-        this.shown = true;
+      this.shown = true;
     },
+
     dismiss: function() {
       popup.style.display = 'none';
-      proj.style.display = 'none'
-        this.shown = false;
+      proj.style.display = 'none';
+      this.shown = false;
     },
     toggle: function(x, y) {
       if (this.shown) {
