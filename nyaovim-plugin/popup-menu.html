@@ -5,6 +5,8 @@
         position: absolute;
         padding: 8px;
         border-radius: 8px;
+        display: none;
+        background-color: #dddddd;
       }
 
       #proj {
@@ -22,8 +24,11 @@
       }
 
     </style>
+
+    <span id="proj">
+    </span>
     <div id="popup">
-      <content></content>
+      <content><p id="my_text"></p></content>
     </div>
   </template>
 </dom-module>
@@ -84,25 +89,30 @@
           }
           case 'popup-menu:open': {
             if (!this.shown) {
-              this.show(args[0], args[1], args[2]);
+              this.show(args[0], args[1]);
             }
+            break;
+          }
+          case 'popup-menu:add': {
+            this.add(args[0]);
             break;
           }
           case 'popup-menu:toggle': {
             if (this.shown) {
               this.dismiss();
             } else {
-              this.show(args[0], args[1], args[2]);
+              this.show(args[0], args[1]);
             }
             break;
           }
           default:
-                              break;
+            break;
         }
       });
       c.subscribe('popup-menu:toggle');
       c.subscribe('popup-menu:open');
       c.subscribe('popup-menu:close');
+      c.subscribe('popup-menu:add');
     },
     setContent(elem) {
       console.log("Setting content of elem");
@@ -113,14 +123,8 @@
         popup.appendChild(elem);
       }
     },
-    show: function(str_list, line, col) {
+    show: function(line, col) {
       var loc = this.editor.screen.convertPositionToLocation(line, col - 1);
-
-      var p = document.createElement('my_text');
-      console.log("setting the text content to");
-      console.log(str_list);
-      p.textContent = str_list;
-      this.setContent(p);
 
       popup.style.left = (loc.x - 20 - 13) + 'px';
       popup.style.top = (loc.y + 13) + 'px';
@@ -130,7 +134,20 @@
       proj.style.display = 'inline'
       this.shown = true;
     },
+    add: function(str_line) {
+      if (str_line == '') {
+        while (popup.firstChild) {
+          popup.removeChild(popup.firstChild);
+        }
+      } else {
+        var t = document.createTextNode(str_line);
+        var br = document.createElement("br");
 
+        console.log("Trying to append: " + str_line);
+        popup.appendChild(t);
+        popup.appendChild(br);
+      }
+    },
     dismiss: function() {
       popup.style.display = 'none';
       proj.style.display = 'none';

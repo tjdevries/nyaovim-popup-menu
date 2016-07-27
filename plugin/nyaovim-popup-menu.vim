@@ -16,14 +16,18 @@ augroup END
 " the popup
 "
 function! s:open_popup_menu(str_list, line, col) abort
-    call rpcnotify(0, 'popup-menu:open', a:str_list, a:line, a:col)
-    sleep 1
-    call rpcnotify(0, 'popup-menu:close')
+    call rpcnotify(0, 'popup-menu:open', a:line, a:col)
 
-    " augroup nyaovim_popup_menu
-    "     autocmd!
-    "     autocmd CursorMoved,CursorMovedI * call rpcnotify(0, 'popup-menu:close') | autocmd! nyaovim_popup_menu
-    " augroup END
+    call rpcnotify(0, 'popup-menu:add', '')
+
+    for l:str_line in a:str_list
+      call rpcnotify(0, 'popup-menu:add', l:str_line)
+    endfor
+
+    augroup nyaovim_popup_menu
+        autocmd!
+        autocmd CursorMoved,CursorMovedI * call rpcnotify(0, 'popup-menu:close') | autocmd! nyaovim_popup_menu
+    augroup END
 endfunction
 
 function! TogglePopupMenu(str_list, line, col)
@@ -31,7 +35,7 @@ function! TogglePopupMenu(str_list, line, col)
 endfunction
 
 function! OpenPopupMenu(str_list, line, col)
-    call rpcnotify(0, 'popup-menu:open', a:str_list, a:line, a:col)
+    call rpcnotify(0, 'popup-menu:open', a:line, a:col)
 endfunction
 
 function! ClosePopupMenu()
@@ -56,12 +60,12 @@ function! s:calc_virtline() abort
     return l:l + col('.') / l:width + 1
 endfunction
 
-nnoremap <silent><Plug>(nyaovim-popup-menu-open) :<C-u>call <SID>open_popup_menu("HELLO", <SID>calc_virtline(), virtcol('.'))<CR>
-vnoremap <silent><Plug>(nyaovim-popup-menu-open) y:call <SID>open_popup_menu("HELLO", <SID>calc_virtline(), virtcol('.'))<CR>
+nnoremap <silent><Plug>(nyaovim-popup-menu-open) :<C-u>call <SID>open_popup_menu(["HELLO", "world"], <SID>calc_virtline(), virtcol('.'))<CR>
+vnoremap <silent><Plug>(nyaovim-popup-menu-open) y:call <SID>open_popup_menu(["HELLO", "visual", "world"], <SID>calc_virtline(), virtcol('.'))<CR>
 
 if g:nyaovim_popup_menu_default_mapping
-    nmap <silent>gp <Plug>(nyaovim-popup-menu-open)
-    vmap <silent>gp <Plug>(nyaovim-popup-menu-open)
+    nmap <silent>gtj <Plug>(nyaovim-popup-menu-open)
+    vmap <silent>gtj <Plug>(nyaovim-popup-menu-open)
 endif
 
 let g:loaded_nyaovim_popup_menu = 1
